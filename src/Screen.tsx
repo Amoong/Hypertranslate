@@ -1,5 +1,6 @@
 import React from "react";
 import { useSetLang, useT } from "./context";
+
 const Screen = () => {
   const setLang = useSetLang();
   const t = useT();
