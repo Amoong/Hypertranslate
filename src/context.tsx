@@ -1,41 +1,56 @@
-import React, { useState, useContext } from "react";
-import { runInNewContext } from "vm";
+import React, { useState, useContext, createContext } from "react";
 
-const defaultValue = {
-  user: { name: "", loggedIn: false },
-  fn: {
-    logUserIn: () => {},
-  },
+const _setLang = (input: string) => {};
+const _t = (input: string) => "";
+const sample = {
+  setLang: _setLang,
+  t: _t,
 };
 
-const UserContext = React.createContext(defaultValue);
+const LangContext = createContext(sample);
 
-interface IProps {
-  children: React.ReactNode;
+interface ITranslationsProps {
+  es: {
+    "Hello!": string;
+    Translate: string;
+  };
 }
 
-const UserContextProvider: React.FunctionComponent<IProps> = ({ children }) => {
-  const [user, setUser] = useState({
-    name: "Mu",
-    loggedIn: false,
-  });
-  const logUserIn = () => setUser({ ...user, loggedIn: true });
+interface ILangProps {
+  defaultLang: string;
+  children: React.ReactNode;
+  translations: ITranslationsProps;
+}
+
+const Lang: React.FunctionComponent<ILangProps> = ({
+  defaultLang,
+  children,
+  translations,
+}) => {
+  const [lang, setLang] = useState<string>(defaultLang);
+  const hyperTranslate = (text: string) => {
+    if (lang === defaultLang) {
+      return text;
+    } else {
+      return (translations as any)[lang][text];
+    }
+  };
 
   return (
-    <UserContext.Provider value={{ user, fn: { logUserIn } }}>
+    <LangContext.Provider value={{ setLang, t: hyperTranslate }}>
       {children}
-    </UserContext.Provider>
+    </LangContext.Provider>
   );
 };
 
-export const useUser = () => {
-  const { user } = useContext(UserContext);
-  return user;
+export const useSetLang = () => {
+  const { setLang } = useContext(LangContext);
+  return setLang;
 };
 
-export const useFns = () => {
-  const { fn } = useContext(UserContext);
-  return fn;
+export const useT = () => {
+  const { t } = useContext(LangContext);
+  return t;
 };
 
-export default UserContextProvider;
+export default Lang;
